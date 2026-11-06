@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://deadlineku2.my.id/sitemap.xml
