@@ -2,7 +2,7 @@ import {useState} from 'react';
 import {GoogleAuthProvider,signInWithPopup,signInWithRedirect,createUserWithEmailAndPassword,signInWithEmailAndPassword,updateProfile,signOut} from 'firebase/auth';
 import {doc,setDoc,addDoc,updateDoc,deleteDoc,collection,query,where,getDocs,serverTimestamp} from 'firebase/firestore';
 import {auth,db} from './firebase';
-import {Ic,G,Brand,fmt,ymd,mkCode,lsGet,lsSet,getPrefs,stOf,kind,toast,askPerm,notify,toLocalInput} from './lib';
+import {Ic,G,Brand,fmt,ymd,mkCode,lsGet,lsSet,getPrefs,stOf,kind,toast,askPerm,notify,toLocalInput,Pick,JENIS,REM} from './lib';
 
 const FE={'auth/invalid-credential':'Email atau password salah.','auth/wrong-password':'Email atau password salah.','auth/user-not-found':'Email belum terdaftar.','auth/email-already-in-use':'Email sudah terdaftar. Pindah ke Login.','auth/weak-password':'Password minimal 6 karakter.','auth/invalid-email':'Email belum valid.','auth/popup-closed-by-user':'Login Google dibatalkan.','auth/network-request-failed':'Koneksi bermasalah. Coba lagi.','auth/unauthorized-domain':'Domain ini belum diizinkan di Firebase Authentication > Settings > Authorized domains.','auth/too-many-requests':'Terlalu banyak percobaan. Coba lagi nanti.','permission-denied':'Akses ditolak. Cek Firestore Rules.'};
 export const fe=e=>FE[e.code]||('Terjadi kesalahan: '+(e.code||e.message));
@@ -50,7 +50,7 @@ if(!r.length)return<div className="card empty"><b>Tidak ada tugas</b><span class
 const setSt=(t,v)=>updateDoc(doc(db,'tasks',t.id),{['status.'+uid]:v}).catch(x=>toast(fe(x)));
 const del=t=>confirm('Hapus tugas ini?')&&deleteDoc(doc(db,'tasks',t.id)).catch(x=>toast(fe(x)));
 return<div className="list">{r.map(t=>{const k=kind(t,uid);return<article className="card task" key={t.id}>
-<div className="row"><span className={'tag '+LBL[k][1]}>{LBL[k][0]}</span><span className="tag">{t.jenis}</span><span className="tag">{t.course}</span></div><h3>{t.title}</h3><div className="mut" style={{fontSize:13}}>{fmt(t.deadline)}</div>
+<div className="row"><span className={'tag '+LBL[k][1]}>{LBL[k][0]}</span><span className="tag">{t.jenis}</span><span className="tag">{t.course}</span>{t.reminder&&t.reminder!=='none'&&<span className="tag"><Ic n="bell"/> {(REM.find(r=>r[0]===t.reminder)||[])[1]||t.reminder}</span>}</div><h3>{t.title}</h3><div className="mut" style={{fontSize:13}}>{fmt(t.deadline)}</div>
 {t.desc&&<p>{t.desc}</p>}{t.note&&<p><b>Catatan:</b> {t.note}</p>}
 <div className="row" style={{margin:'6px 0 12px'}}>{[['link','Kumpulkan'],['ref','Referensi']].map(([a,b])=>/^https?:\/\//.test(t[a]||'')&&<a key={a} href={t[a]} target="_blank" rel="noopener noreferrer">{b}</a>)}</div>
 <div className="row sb"><div className="sel" style={{flex:1,minWidth:120}}><select value={stOf(t,uid)} onChange={e=>setSt(t,e.target.value)} style={{paddingLeft:14}}>{['belum','proses','selesai'].map(s=><option key={s} value={s}>{s[0].toUpperCase()+s.slice(1)}</option>)}</select></div>{adm&&<button className="btn ghost sm danger" onClick={()=>del(t)}><Ic n="x"/> Hapus</button>}</div></article>})}</div>}
@@ -58,7 +58,7 @@ return<div className="list">{r.map(t=>{const k=kind(t,uid);return<article classN
 export function Dash({tasks,uid,adm}){
 const [F,setF]=useState(DF),k=tasks.map(t=>kind(t,uid)),n=x=>k.filter(y=>y===x).length;
 const S=[['TOTAL TUGAS',tasks.length,'list'],['MENDESAK',n('soon'),'clock'],['SELESAI',n('done'),'check'],['TELAT',n('late'),'alert']];
-const O={jenis:[['all','Semua'],['individu','Individu'],['kelompok','Kelompok']],st:[['all','Status'],['belum','Belum'],['proses','Proses'],['selesai','Selesai']],dl:[['all','Deadline'],['today','Hari ini'],['week','7 hari'],['late','Telat']]};
+const O={jenis:[['all','Semua'],...JENIS.map(j=>[j,j[0].toUpperCase()+j.slice(1)])],st:[['all','Status'],['belum','Belum'],['proses','Proses'],['selesai','Selesai']],dl:[['all','Deadline'],['today','Hari ini'],['week','7 hari'],['late','Telat']]};
 return<><div className="stats">{S.map(([l,v,i])=><div className="stat" key={l}><small>{l}</small><b>{v}</b><span className="ib"><Ic n={i}/></span></div>)}</div>
 <div className="card" style={{borderRadius:28,padding:14}}><div className="srch"><Ic n="search"/><input placeholder="Cari tugas atau mata kuliah" value={F.q} onChange={e=>setF({...F,q:e.target.value})}/></div>
 <div className="filters">{Object.entries(O).map(([key,o])=><div className="sel" key={key}><Ic n="filter"/><select value={F[key]} onChange={e=>setF({...F,[key]:e.target.value})}>{o.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></div>)}</div></div>
@@ -84,8 +84,9 @@ const tog=async k=>{if(k==='push'&&!p.push&&!(await askPerm()))return bump(x=>x+
 const Sw=({k,i,l,d})=><div className="pref"><span className="pi"><Ic n={i}/></span><div style={{flex:1}}><b>{l}</b>{d&&<small>{d}</small>}</div><button className={'sw'+(p[k]?' on':'')} role="switch" aria-checked={p[k]} aria-label={l} onClick={()=>tog(k)}/></div>;
 const Row=({a,b})=><div className="mem"><span>{a}</span><span className="mut" style={{textAlign:'right'}}>{b}</span></div>;
 return<><div className="card xl"><div className="row sb nw"><div><small className="lab">PREFERENSI</small><h2 style={{fontSize:30,marginTop:4}}>Reminder</h2></div><span style={{color:'#aef'}}><Ic n="ring"/></span></div>
-<div className="g12" style={{marginTop:18}}><Sw k="push" i="phone" l="Push notification HP" d="Muncul di notifikasi HP setelah izin aktif."/><Sw k="h3" i="wand" l="Reminder H-3"/><Sw k="h1" i="wand" l="Reminder H-1"/></div>
-<label>Jam sebelum</label><div className="row nw"><input type="number" min="1" max="72" value={p.hours} onChange={e=>upd({...p,hours:Math.min(72,Math.max(1,+e.target.value||1))})} style={{flex:1}}/><button className="btn" style={{flex:1}} onClick={()=>notify(uid,'Deadlineku','Ini notifikasi tes. Reminder berjalan dengan baik.',true)}><Ic n="vol"/> Tes</button></div>
+<div className="g12" style={{marginTop:18}}><Sw k="push" i="phone" l="Push notification HP" d="Muncul di notifikasi HP setelah izin aktif."/></div>
+<p className="mut" style={{fontSize:14,lineHeight:1.6,marginTop:14}}>Waktu reminder diatur admin di setiap tugas (H-7, H-3, H-1, atau beberapa jam sebelum deadline).</p>
+<button className="btn w100" style={{marginTop:14}} onClick={()=>notify(uid,'Deadlineku','Ini notifikasi tes. Reminder berjalan dengan baik.',true)}><Ic n="vol"/> Tes notifikasi</button>
 <button className="btn ghost w100" style={{marginTop:14}} onClick={async()=>{await askPerm();bump(x=>x+1)}}><Ic n="phone"/> Izinkan Notifikasi</button>
 <div className="dash" style={{marginTop:14,borderStyle:'solid'}}><b style={{color:'#ffe9a8',display:'block',marginBottom:6}}>{ps}</b>{pd}</div></div>
 <div className="card xl"><h2 style={{fontSize:26,marginBottom:12}}>Deadline dekat</h2>{near.length?near.map(t=><Row key={t.id} a={<>{t.title}<br/><small className="mut">{t.course}</small></>} b={fmt(t.deadline)}/>):<div className="dash">Tidak ada deadline dalam 7 hari.</div>}</div>
@@ -114,7 +115,7 @@ const F=(l,n,ph,tag='input')=>{const T=tag;return<><label>{l}</label><T name={n}
 return<><form className="card" style={{maxWidth:720}} onSubmit={submit}><small className="lab">INPUT TUGAS</small><h2 style={{fontSize:30,marginTop:4}}>Tugas baru</h2>
 {F('Judul tugas','title','Contoh: Laporan basis data')}{F('Mata kuliah','course','Contoh: Pemrograman Web')}{F('Deskripsi','desc','Instruksi tugas yang jelas dan ringkas','textarea')}
 <label>Deadline</label><input name="deadline" type="datetime-local" defaultValue={toLocalInput(d)}/>
-<label>Jenis</label><select name="jenis"><option>individu</option><option>kelompok</option></select><label>Reminder</label><select name="reminder"><option>H-1</option><option>H-3</option><option>H-7</option></select>
+<label>Jenis</label><Pick name="jenis" label="Jenis tugas" options={JENIS.map(j=>[j,j])} defaultValue="individu"/><label>Reminder</label><Pick name="reminder" label="Reminder" options={REM} defaultValue="H-1"/>
 {F('Link pengumpulan','link','https://...')}{F('Link referensi','ref','https://...')}{F('Catatan','note','Catatan tambahan dari ketua kelas','textarea')}
 <Err e={err}/><div className="row" style={{marginTop:6}}><button type="button" className="btn ghost" style={{flex:1}} onClick={onDone}><Ic n="x"/> Batal</button><button className="btn" style={{flex:1}} disabled={busy}><Ic n="save"/> Simpan</button></div></form>
 <div className="card" style={{maxWidth:720}}><h2 style={{fontSize:28,marginBottom:14}}>Tugas kelas</h2><TaskList tasks={tasks} uid={uid} adm/></div></>}
