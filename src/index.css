@@ -193,3 +193,119 @@ input:focus,select:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 
 .dd-opt.on{background:#1b3c4e;color:#fff}
 .dd-opt svg{color:#e6f6fb}
 @media(prefers-reduced-motion:reduce){.dd-menu{animation:none}}
+
+/* ===== task card (countdown, info boxes, segmented status, actions) ===== */
+.tag.ic{display:inline-flex;align-items:center;gap:6px;padding:6px 14px 6px 12px}
+.tag.ic svg.i{width:16px;height:16px;margin:0;vertical-align:0}
+.task{display:flex;flex-direction:column;padding:20px}
+.task h3{font-size:22px;line-height:1.2;margin:14px 0 8px}
+.task p.desc{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:15px;margin:0}
+.bk{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:#fff;flex:none;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.bk svg.i{width:22px;height:22px}
+.infos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.infos>div{padding:12px 16px;border:1px solid var(--line);border-radius:20px;background:rgba(5,12,22,.45);min-width:0}
+.infos small{display:block;color:var(--mut);font-size:13px;margin-bottom:4px}
+.infos b{display:block;font-size:15px;font-weight:500;overflow-wrap:anywhere}
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;margin-top:16px;border:1px solid var(--line);border-radius:22px;background:rgba(5,12,22,.6)}
+.seg button{display:flex;align-items:center;justify-content:center;gap:7px;height:44px;border-radius:18px;color:var(--mut);font-weight:500;font-size:14px;border:1px solid transparent;transition:background-color .2s,color .2s,border-color .2s}
+.seg button svg.i{width:18px;height:18px}
+.seg button.on{background:linear-gradient(160deg,#17606f,#0a3a4c);border-color:rgba(51,224,255,.32);color:#fff}
+.seg button.on.proses{background:linear-gradient(160deg,#4a4220,#2b2711);border-color:rgba(255,200,87,.4);color:#ffe9a8}
+.seg button:not(.on):hover{color:#fff;background:rgba(51,224,255,.08)}
+.acts{display:flex;gap:10px;margin-top:12px}
+.acts .btn{flex:1;min-width:0;border-radius:22px;height:48px}
+.acts .ib{width:48px;height:48px;border-radius:50%;flex:none}
+.acts .ib.del{background:#2a1626;border-color:rgba(255,120,150,.4);color:#ff9fb2}
+@media(hover:hover){.acts .ib.del:hover{background:rgba(255,107,122,.2);border-color:var(--bad);color:#fff;box-shadow:0 0 0 3px rgba(255,107,122,.14)}}
+/* modal */
+.mdl{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;padding:0;background:rgba(2,8,16,.72);backdrop-filter:blur(4px);animation:fade .2s ease both}
+.mdl-c{width:100%;max-width:560px;max-height:92vh;max-height:92dvh;overflow-y:auto;overscroll-behavior:contain;background:#0a1522;border-bottom-left-radius:0;border-bottom-right-radius:0;padding:20px 20px calc(24px + env(safe-area-inset-bottom));animation:sheet .28s cubic-bezier(.2,.8,.2,1) both}
+@media(min-width:700px){.mdl{align-items:center;padding:24px}.mdl-c{border-radius:32px;padding:26px}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes sheet{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){.mdl,.mdl-c{animation:none}}
+
+/* ===== desktop: two-column pages ===== */
+.col{display:grid;gap:16px;align-content:start;min-width:0}
+.pair{display:block}
+@media(min-width:901px){
+.page{gap:20px}
+.page.p-add{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);align-items:start}
+.page.p-cal{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)}
+.page.p-notif{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr)}
+.page.p-class{grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);align-items:start}
+.page.p-add .list{grid-template-columns:minmax(0,1fr)}
+.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+}
+
+/* ===== Deadlineku: tampilan HP (mengikuti screenshot referensi) ===== */
+/* font: Roboto di semua teks, heading 700 (bobot 800 tidak dimuat) */
+h1,h2,h3,.hd,.land h1,.head h1,.center h1{font-weight:700}
+.land h1{letter-spacing:-.015em}
+/* latar: gradasi biru-teal + grid titik tipis */
+body{background:
+radial-gradient(rgba(150,205,235,.075) 1px,transparent 1.4px) 0 0/22px 22px,
+linear-gradient(180deg,rgba(14,64,96,.62) 0,rgba(10,40,64,.3) 38%,rgba(6,20,34,0) 70%),
+radial-gradient(520px 620px at -8% 12%,rgba(22,78,108,.5),transparent 70%),
+radial-gradient(480px 560px at -10% 100%,rgba(8,88,84,.55),transparent 70%),
+radial-gradient(520px 420px at 108% 8%,rgba(20,60,96,.5),transparent 70%),
+radial-gradient(520px 520px at 108% 96%,rgba(6,58,70,.45),transparent 70%),var(--bg);background-attachment:fixed}
+
+/* landing: layout area (desktop) */
+.land{grid-template-areas:"hero feats" "cta feats";grid-template-rows:auto auto;align-content:center;row-gap:0}
+.hero{grid-area:hero;align-self:end}.land>.cta{grid-area:cta;align-self:start}.land>.feats{grid-area:feats}
+.feats-h{display:none}
+
+@media(max-width:900px){
+/* landing HP: brand > judul > deskripsi > kotak fitur > tombol, ditengah layar */
+.land{display:flex;flex-direction:column;justify-content:center;gap:0;min-height:100vh;min-height:100svh;padding:28px 18px}
+.land .pill{background:#0c1827;padding:6px 20px 6px 6px}
+.land .pill .logo{width:46px;height:46px;border-radius:16px}
+.land h1{font-size:clamp(32px,10.2vw,48px);line-height:1;margin:14px 0 12px;font-weight:700}
+.land p{font-size:16px;line-height:1.5;margin:0 0 20px;max-width:none}
+.feats{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px;border-radius:32px;background:rgba(8,18,31,.62)}
+.feats-h{display:flex;grid-column:1/-1;align-items:center;justify-content:space-between;padding:6px 4px 4px 4px}
+.feats-h span{font-size:12.5px;font-weight:500;letter-spacing:.16em;color:#9ccbd8}
+.feats-h b{font-size:14px;font-weight:500;padding:8px 16px;border-radius:999px;border:1px solid rgba(51,224,255,.4);background:rgba(20,92,104,.35);color:#cdf3fb}
+.feat{min-height:0;padding:14px 14px 14px;border-radius:26px;background:rgba(8,18,31,.78)}
+.feat.xtra{display:none}
+.feat .logo{width:40px;height:40px;border-radius:50%;margin-bottom:10px}
+.feat .logo svg.i{width:20px;height:20px}
+.feat h3{font-size:17px;line-height:1.2;margin-bottom:4px}
+.feat p{font-size:13px;line-height:1.35;letter-spacing:-.01em}
+.land>.cta{width:100%;height:68px;margin-top:20px;padding:0 8px 0 24px;border-radius:24px;font-size:17px;font-weight:700;background:linear-gradient(135deg,#0f4f5c,#073446);border-color:rgba(51,224,255,.35)}
+.cta i{width:52px;height:52px;border-radius:18px}
+
+/* halaman aplikasi HP */
+.page{padding:14px 18px 120px}
+.card.task{padding:14px;border-radius:26px}
+.task h3{font-size:21px;line-height:1.2;margin:12px 0 6px}
+.task p.desc{-webkit-line-clamp:1;font-size:15px;line-height:1.4}
+.tag{font-size:14px;font-weight:500;padding:5px 12px;color:#e3edf8;background:rgba(10,24,40,.6)}
+.tag.ic{padding:5px 12px 5px 10px;gap:6px;border-color:rgba(51,224,255,.3);background:rgba(18,70,88,.4);color:#fff}
+.task .row .tag:not(.ic){background:rgba(6,14,26,.55)}
+.tag.ic.done{border-color:rgba(51,224,255,.4);background:rgba(22,98,108,.42);color:#fff}
+.tag.ic.soon{border-color:rgba(255,200,87,.45);background:rgba(110,92,28,.3);color:#f6e7b4}
+.tag.ic.late{border-color:rgba(255,107,122,.5);background:rgba(120,30,50,.3);color:#ffd2d8}
+.infos{margin:0 -14px;padding:0 14px 14px;gap:8px}
+.infos>div{padding:12px 16px;border-radius:20px}
+.infos small{font-size:14px;margin-bottom:2px}
+.infos b{font-size:15px;font-weight:500}
+.seg{margin-top:14px;border-radius:24px}
+.seg button{font-size:13px;gap:6px;height:44px}
+.acts{gap:10px;margin-top:10px}
+.acts .btn{height:41px;border-radius:999px;font-size:14px;font-weight:500}
+.acts .ib{width:41px;height:41px}
+.acts .ib svg.i{width:19px;height:19px}
+
+/* filter: ikon + teks terpotong + panah (seperti referensi) */
+.sel{min-width:0}
+.sel svg.i{display:block;position:absolute;left:14px;top:17px;width:20px;height:20px;z-index:1}
+.sel select{-webkit-appearance:none;appearance:none;padding:0 34px 0 42px;font-size:15px;font-weight:500;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b6c4d8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:20px}
+.filters{gap:8px}
+}
+@media(max-width:520px){
+.sel svg.i{display:block}
+.sel select{padding:0 34px 0 42px;font-size:15px}
+.filters{gap:8px}
+}

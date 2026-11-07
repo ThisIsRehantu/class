@@ -49,5 +49,5 @@ return<div className="shell">
 <div className="main"><header className="head">{mb?<div className="tl"><div className="logo"><Ic n="cap"/></div><div><h1>Deadline<span className="ac">ku</span></h1><small>Kelas: {klass.name}</small></div></div>:<div><small>KELAS: {klass.name}</small><h1>{T[t2]}</h1></div>}
 <div className="r">{mb?<button className="ib" onClick={out} aria-label="Keluar"><Ic n="out"/></button>:<span className="code" title="Kode kelas">{klass.code}</span>}
 {adm&&(mb?<button className="ib pl" onClick={()=>setTab('add')} aria-label="Tambah tugas"><Ic n="plus"/></button>:<button className="btn" onClick={()=>setTab('add')}><Ic n="plus"/> Tugas</button>)}</div></header>
-<div className="page">{page}</div></div>
+<div className={'page p-'+t2}>{page}</div></div>
 <nav className="bar" style={{'--n':nav.length,'--i':Math.max(0,nav.findIndex(n=>n[0]===t2))}}><span className="ind" aria-hidden="true"/>{nav.map(n=><button key={n[0]} className={t2===n[0]?'on':''} onClick={()=>setTab(n[0])}><Ic n={n[2]}/>{n[3]}</button>)}</nav></div>}
