@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Arahkan ke sitemap Anda
+Sitemap: https://deadlineku2.my.id/sitemap.xml
