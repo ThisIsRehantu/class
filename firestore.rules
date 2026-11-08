@@ -1,0 +1,126 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- helper ----------
+    function signedIn() { return request.auth != null; }
+    function me() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function cls(id) { return get(/databases/$(database)/documents/classes/$(id)).data; }
+    function isAdminOf(classId) {
+      return signedIn() && me().role == 'admin' && me().classId == classId;
+    }
+    function inClass(classId) {
+      return signedIn() && me().classId != null && me().classId == classId;
+    }
+
+    // ---------- users ----------
+    match /users/{uid} {
+      allow read: if signedIn() &&
+        (request.auth.uid == uid ||
+         (me().classId != null && me().classId == resource.data.classId));
+
+      // akun baru selalu mulai tanpa kelas dan tanpa role
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.get('role', null) == null
+        && request.resource.data.get('classId', null) == null
+        && !('lastDigest' in request.resource.data);
+
+      allow update: if signedIn() && (
+        // 1) diri sendiri
+        (request.auth.uid == uid && lastDigestOk() && (
+            sameRoleClass()
+            || joinAsMember()
+            || createdOwnClass()
+            || leaveClass()))
+        ||
+        // 2) admin mengelola anggota di kelasnya (hanya role/classId)
+        (request.auth.uid != uid
+          && isAdminOf(resource.data.get('classId', null))
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role', 'classId'])
+          && uid != cls(resource.data.classId).admin
+          && (
+            // naikkan anggota -> admin
+            (resource.data.role == 'member' && request.resource.data.role == 'admin'
+              && request.resource.data.classId == resource.data.classId)
+            // turunkan admin -> anggota (pembuat kelas tidak bisa)
+            || (resource.data.role == 'admin' && request.resource.data.role == 'member'
+              && request.resource.data.classId == resource.data.classId)
+            // keluarkan anggota biasa
+            || (resource.data.role == 'member' && request.resource.data.role == null
+              && request.resource.data.classId == null)))
+      );
+
+      function sameRoleClass() {
+        return request.resource.data.get('role', null) == resource.data.get('role', null)
+            && request.resource.data.get('classId', null) == resource.data.get('classId', null);
+      }
+      function joinAsMember() {
+        return resource.data.get('classId', null) == null
+            && request.resource.data.role == 'member'
+            && request.resource.data.classId is string
+            && exists(/databases/$(database)/documents/classes/$(request.resource.data.classId));
+      }
+      function createdOwnClass() {
+        return resource.data.get('classId', null) == null
+            && request.resource.data.role == 'admin'
+            && request.resource.data.classId is string
+            && exists(/databases/$(database)/documents/classes/$(request.resource.data.classId))
+            && cls(request.resource.data.classId).admin == request.auth.uid;
+      }
+      // pembuat kelas tidak boleh keluar sebelum memindahkan kepemilikan
+      function leaveClass() {
+        return resource.data.get('classId', null) != null
+            && request.resource.data.get('classId', null) == null
+            && request.resource.data.get('role', null) == null
+            && cls(resource.data.classId).admin != request.auth.uid;
+      }
+      // jeda 3 jam "Cek tugas mepet" dicek di server (admin bebas)
+      function lastDigestOk() {
+        return request.resource.data.get('lastDigest', null) == resource.data.get('lastDigest', null)
+          || (request.resource.data.lastDigest == request.time
+              && (resource.data.get('role', null) == 'admin'
+                  || resource.data.get('lastDigest', null) == null
+                  || resource.data.lastDigest + duration.value(3, 'h') <= request.time));
+      }
+    }
+
+    // ---------- classes ----------
+    match /classes/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.admin == request.auth.uid;
+      // admin mana pun boleh ganti nama/kode; hanya pemilik yang boleh memindahkan kepemilikan
+      allow update: if isAdminOf(id) && (
+        request.resource.data.admin == resource.data.admin
+        || (resource.data.admin == request.auth.uid
+            && get(/databases/$(database)/documents/users/$(request.resource.data.admin)).data.classId == id
+            && get(/databases/$(database)/documents/users/$(request.resource.data.admin)).data.role == 'admin'));
+    }
+
+    // ---------- tasks ----------
+    match /tasks/{id} {
+      allow read: if inClass(resource.data.classId);
+      allow create: if isAdminOf(request.resource.data.classId);
+      allow update: if
+        // admin: boleh ubah apa saja, kecuali memindahkan tugas ke kelas lain
+        (isAdminOf(resource.data.classId) && request.resource.data.classId == resource.data.classId)
+        ||
+        // anggota: hanya status miliknya sendiri
+        (inClass(resource.data.classId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+          && request.resource.data.status.diff(resource.data.get('status', {})).affectedKeys().hasOnly([request.auth.uid]));
+      allow delete: if isAdminOf(resource.data.classId);
+    }
+
+    // ---------- comments ----------
+    match /comments/{id} {
+      allow read: if inClass(resource.data.classId);
+      allow create: if inClass(request.resource.data.classId)
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 500
+        && request.resource.data.createdAt == request.time
+        && get(/databases/$(database)/documents/tasks/$(request.resource.data.taskId)).data.classId == request.resource.data.classId;
+      allow delete: if resource.data.uid == request.auth.uid || isAdminOf(resource.data.classId);
+    }
+  }
+}

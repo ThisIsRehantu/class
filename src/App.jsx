@@ -4,6 +4,8 @@ import {doc,getDoc,setDoc,updateDoc,onSnapshot,collection,query,where,serverTime
 import {auth,db,OK} from './firebase';
 import {Ic,Brand,useMedia,toast,checkReminders} from './lib';
 import {Landing,Auth,Setup,Dash,Cal,Notif,Klas,Add,fe} from './pages';
+import {Verify} from './extras';
+const so=()=>import('firebase/auth').then(m=>m.signOut(auth));
 
 const JOIN=new URLSearchParams(location.search).get('class');
 const NAV=[['dash','Dashboard','home','Home'],['cal','Kalender','cal','Kalender'],['notif','Notifikasi','bell','Notif'],['class','Kelas','users','Kelas'],['add','Tambah Tugas','pc','Tambah']];
@@ -11,16 +13,17 @@ const Loading=()=><main className="center" style={{textAlign:'center',paddingTop
 
 export default function App(){
 const [ready,setReady]=useState(false),[uid,setUid]=useState(null),[profile,setProfile]=useState(null),[klass,setKlass]=useState(null),[members,setMembers]=useState([]),[tasks,setTasks]=useState([]);
+const [au,setAu]=useState(null),[needV,setNeedV]=useState(false);
 const [view,setView]=useState(JOIN?'auth':'landing'),[tab,setTab]=useState('dash'),[logV,setLogV]=useState(0);
 const pending=useRef(null),joined=useRef(false),mb=useMedia('(max-width:900px)');
 
 useEffect(()=>{if(!OK){setReady(true);return}let un=()=>{};
-const off=onAuthStateChanged(auth,async u=>{un();setUid(u?.uid||null);
+const off=onAuthStateChanged(auth,async u=>{un();setUid(u?.uid||null);setAu(u||null);setNeedV(!!u&&u.providerData.some(x=>x.providerId==='password')&&!u.providerData.some(x=>x.providerId==='google.com')&&!u.emailVerified);
 if(!u){setProfile(null);setView(v=>v==='auth'?v:'landing');setReady(true);return}
 const ref=doc(db,'users',u.uid);
 try{if(!(await getDoc(ref)).exists())await setDoc(ref,{name:pending.current||u.displayName||u.email.split('@')[0],email:u.email,photo:u.photoURL||'',role:null,classId:null,createdAt:serverTimestamp()})}catch(x){toast(fe(x))}
 pending.current=null;
-un=onSnapshot(ref,async s=>{if(!s.exists())return;const p={id:s.id,...s.data()};
+un=onSnapshot(ref,async s=>{if(!s.exists())return;const p={id:s.id,...s.data({serverTimestamps:'estimate'})};
 if(!p.classId&&JOIN&&!joined.current){joined.current=true;try{if((await getDoc(doc(db,'classes',JOIN))).exists()){await updateDoc(ref,{classId:JOIN,role:'member'});history.replaceState(null,'',location.pathname);return}}catch{toast('Link kelas tidak valid')}}
 setProfile(p);setReady(true)},x=>{toast(fe(x));setReady(true)})});
 return()=>{off();un()}},[]);
@@ -31,18 +34,19 @@ onSnapshot(query(collection(db,'users'),where('classId','==',cid)),s=>setMembers
 onSnapshot(query(collection(db,'tasks'),where('classId','==',cid)),s=>setTasks(s.docs.map(d=>({id:d.id,...d.data()}))),bad)];
 return()=>u.forEach(f=>f())},[profile?.classId]);
 
-useEffect(()=>{if(!uid||!tasks.length)return;const run=()=>checkReminders(uid,tasks)&&setLogV(v=>v+1);run();const i=setInterval(run,60000);return()=>clearInterval(i)},[uid,tasks]);
+useEffect(()=>{if(!uid||!tasks.length)return;const run=()=>checkReminders(uid,tasks)&&setLogV(v=>v+1),vis=()=>document.visibilityState==='visible'&&run();run();const i=setInterval(run,30000);document.addEventListener('visibilitychange',vis);window.addEventListener('focus',run);return()=>{clearInterval(i);document.removeEventListener('visibilitychange',vis);window.removeEventListener('focus',run)}},[uid,tasks]);
 
 if(!ready)return<Loading/>;
 if(!OK)return<main className="center"><Brand/><div className="card" style={{marginTop:24}}><b>Firebase belum dikonfigurasi.</b><p className="mut" style={{marginTop:8,lineHeight:1.6}}>Salin <code>.env.example</code> menjadi <code>.env</code>, isi nilainya, lalu jalankan ulang.</p></div></main>;
+if(uid&&au&&needV)return<Verify user={au} onOk={()=>setNeedV(false)} onOut={so}/>;
 if(uid&&!profile)return<Loading/>;
 if(!profile)return view==='auth'?<Auth pending={pending}/>:<Landing onStart={()=>setView('auth')}/>;
 if(!profile.classId)return<Setup profile={profile}/>;
 if(!klass)return<Loading/>;
 
 const adm=profile.role==='admin',nav=NAV.filter(n=>n[0]!=='add'||adm),T=Object.fromEntries(NAV.map(n=>[n[0],n[1]])),t2=adm||tab!=='add'?tab:'dash';
-const out=()=>import('firebase/auth').then(m=>m.signOut(auth));
-const page={dash:<Dash tasks={tasks} uid={uid} adm={adm}/>,cal:<Cal tasks={tasks}/>,notif:<Notif tasks={tasks} uid={uid} logV={logV}/>,class:<Klas klass={klass} members={members} profile={profile}/>,add:<Add klass={klass} uid={uid} tasks={tasks} onDone={()=>setTab('dash')}/>}[t2];
+const out=so;
+const page={dash:<Dash tasks={tasks} uid={uid} adm={adm} profile={profile} members={members}/>,cal:<Cal tasks={tasks} uid={uid}/>,notif:<Notif tasks={tasks} uid={uid} logV={logV} profile={profile}/>,class:<Klas klass={klass} members={members} profile={profile}/>,add:<Add klass={klass} uid={uid} tasks={tasks} profile={profile} members={members} onDone={()=>setTab('dash')}/>}[t2];
 return<div className="shell">
 <aside className="side"><Brand/><nav className="nav" style={{'--n':nav.length,'--i':Math.max(0,nav.findIndex(n=>n[0]===t2))}}><span className="ind" aria-hidden="true"/>{nav.map(n=><button key={n[0]} className={t2===n[0]?'on':''} onClick={()=>setTab(n[0])}><Ic n={n[2]}/>{n[1]}</button>)}</nav>
 <div className="who"><small>{adm?'ADMIN KELAS':'ANGGOTA'}</small><b>{profile.name}</b><span>{profile.email}</span><button className="btn ghost" onClick={out}><Ic n="out"/> Keluar</button></div></aside>

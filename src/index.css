@@ -104,7 +104,7 @@ select option{background:#0b1626}
 .stats{gap:8px}.stat{padding:12px;min-height:96px;border-radius:20px}.stat b{font-size:28px}.stat small{font-size:10px;padding-right:34px}.stat .ib{width:32px;height:32px;right:8px;top:8px;border-radius:10px}.stat .ib svg{width:16px;height:16px}
 .filters{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.sel select{padding-left:34px;padding-right:4px;font-size:13px}.sel svg{left:10px;width:16px}
 .list{grid-template-columns:minmax(0,1fr)}
-.bar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));padding:6px;border:1px solid var(--line);border-radius:28px;background:rgba(5,12,22,.92);backdrop-filter:blur(12px);z-index:6}
+.bar{display:grid;grid-template-columns:repeat(var(--n,5),minmax(0,1fr));position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));padding:6px;border:1px solid var(--line);border-radius:28px;background:rgba(5,12,22,.92);backdrop-filter:blur(12px);z-index:6}
 .bar button{position:relative;z-index:1;transition:color .25s;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0;border-radius:22px;font-size:11px;font-weight:600;color:var(--mut)}
 .bar button.on{color:#fff}
 .cal div{min-height:48px;padding:5px;font-size:11px}
@@ -309,3 +309,84 @@ radial-gradient(520px 520px at 108% 96%,rgba(6,58,70,.45),transparent 70%),var(-
 .sel select{padding:0 34px 0 42px;font-size:15px}
 .filters{gap:8px}
 }
+
+/* ===== kelas: aksi anggota, modal konfirmasi, ringkasan ===== */
+.mem .ma{display:flex;gap:8px;align-items:center;flex:none}
+.mem .ma .ib{width:40px;height:40px;border-radius:12px}
+.mem>span:first-child{min-width:0;overflow-wrap:anywhere}
+.ib.up{color:#9ff0c4}.ib.kick{color:#ff9fb2;border-color:rgba(255,120,150,.35)}
+.mdl-c .row.cf{margin-top:18px;gap:10px}
+.btn.danger{background:#3a1522;border-color:rgba(255,120,150,.5);color:#ffd5de}
+.dg{display:grid;gap:0}
+.dg .mem small{display:block}
+.dg-n{width:26px;height:26px;border-radius:9px;background:rgba(51,224,255,.12);display:inline-grid;place-items:center;font-size:13px;font-weight:700;margin-right:10px;flex:none}
+
+/* ===== perbaikan layout: kelas tidak melebar ke kanan ===== */
+.col,.g12{grid-template-columns:minmax(0,1fr)}
+.page .card,.page .dash,.page .mem{min-width:0;max-width:100%}
+.dash,.mem b,.mem span{overflow-wrap:anywhere}
+.dash b{overflow-wrap:anywhere}
+.mem{gap:12px;align-items:center}
+.mem>span:last-child{flex:none}
+.dash .row{gap:10px}
+
+/* ===== kalender (mengikuti referensi) ===== */
+.calc{padding:16px}
+.calh{margin-bottom:20px;gap:10px}
+.calh h2{font-size:22px;line-height:1.2;text-align:center;white-space:nowrap}
+.calh .ib.big{width:48px;height:48px;border-radius:16px;flex:none}
+.calh .ib.big svg.i{width:22px;height:22px}
+.calc .cgrid{gap:5px 5px}
+.calc .dw2{font-size:12px;padding:2px 0 8px;letter-spacing:.02em}
+.calc .cd{aspect-ratio:1/1.45;min-height:0;border-radius:16px;font-size:17px;font-weight:700;padding:0;background:rgba(8,16,28,.55);border:1px solid rgba(120,190,215,.2);display:grid;place-items:center;min-width:0}
+.calc .cd.today{background:linear-gradient(160deg,#1e5566,#12394a);border-color:rgba(51,224,255,.45);color:#fff}
+.calc .cd.sel2{box-shadow:0 0 0 2px var(--ac) inset;color:#fff}
+.calc .cd i{bottom:9px}
+.seld{font-size:22px;line-height:1.25;margin:6px 0 14px}
+@media(min-width:901px){.calh h2{font-size:26px}.calc .cd{font-size:18px;border-radius:20px}.seld{font-size:26px}}
+
+/* ===== fitur baru: progress, lampiran, komentar, arsip, auth ===== */
+.pg{margin-top:12px}.pg-h{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.pg-h small{color:var(--mut);font-size:13px}.pg-h b{font-size:13px;font-weight:600}
+.pg-b{display:flex;height:8px;margin-top:8px;border-radius:99px;background:rgba(5,12,22,.8);border:1px solid var(--line);overflow:hidden}
+.pg-b i{display:block;height:100%;transition:width .4s ease}.pg-b .d{background:linear-gradient(90deg,#1aa8ff,var(--ok))}.pg-b .p{background:var(--warn)}
+.pg-d{margin-top:10px}.pg-d summary{cursor:pointer;color:var(--ac);font-size:14px;padding:6px 0}
+.sec{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}.sec h3{font-size:18px;margin-bottom:12px}
+.att{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.att a{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:11px 14px;border:1px solid var(--line);border-radius:16px;background:rgba(5,12,22,.5);overflow:hidden}
+.att a span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.att a svg.i{flex:none;color:var(--ac)}
+.att .ib{width:40px;height:40px;border-radius:12px;flex:none}
+.afm{display:grid;gap:8px;margin-top:10px}.afm input{height:46px;border-radius:16px}.afm .btn{justify-self:start}
+.cm-l{display:grid;gap:12px;margin-bottom:14px}
+.cm{display:flex;gap:10px;min-width:0}.cm .av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;flex:none}
+.cm-b{flex:1;min-width:0;padding:10px 14px;border:1px solid var(--line);border-radius:18px;background:rgba(5,12,22,.5)}
+.cm-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.cm-h b{font-size:14px;font-weight:600}.cm-h small{font-size:12px}
+.cm-x{margin-left:auto;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:var(--mut)}.cm-x:hover{color:var(--bad)}.cm-x svg.i{width:16px;height:16px}
+.cm-b p{margin:4px 0 0;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px}
+.cm-b a{display:inline-flex;align-items:center;gap:6px;margin-top:6px;color:var(--ac);font-size:13px;overflow-wrap:anywhere}.cm-b a svg.i{width:14px;height:14px}
+.cm-f{display:grid;gap:8px}.cm-f textarea{height:auto;min-height:64px;border-radius:18px}
+.cm-r{display:flex;gap:8px;align-items:center}.cm-r input{height:42px;border-radius:14px;font-size:14px;flex:1;min-width:0}.cm-r .btn{flex:none}
+.info{color:#9ff0c4;font-size:14px;line-height:1.5;margin:12px 0}
+.lnk{display:block;width:100%;margin-top:14px;color:var(--ac);font-size:14px;text-align:center;padding:6px}
+.lnk:hover{text-decoration:underline}
+.icsb{margin-top:0}.calr{display:flex;align-items:center;gap:10px;flex:none}.calr .ib{width:38px;height:38px;border-radius:12px}.calr .ib svg.i{width:18px;height:18px}
+.acts{flex-wrap:wrap}.acts .btn{min-width:110px}
+.mdl-c .row .btn.sm{flex:1 1 auto}
+.tabs[role=tablist]{margin-top:0}
+
+/* ===== responsif: HP, tablet, desktop, layar lebar ===== */
+@media(min-width:600px) and (max-width:900px){
+.list{grid-template-columns:repeat(2,minmax(0,1fr))}
+.page{max-width:780px;margin:0 auto;width:100%}
+.bar{left:0;right:0;margin-inline:auto;max-width:560px}
+.stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+.afm{grid-template-columns:1fr 1.4fr auto}
+}
+@media(min-width:901px){
+.page{max-width:1500px;width:100%}
+.page.p-dash,.page.p-class,.page.p-notif{align-items:start}
+.afm{grid-template-columns:1fr 1.4fr auto}
+.cm-f textarea{min-height:72px}
+}
+@media(min-width:1400px){.list{grid-template-columns:repeat(auto-fill,minmax(360px,1fr))}}
+@media(max-width:380px){.cm-r{flex-wrap:wrap}.cm-r .btn{width:100%}.acts .btn{min-width:90px}.head h1{font-size:18px}}
